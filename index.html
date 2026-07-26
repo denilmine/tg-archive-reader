@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Chat History</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    
+    <link rel="stylesheet" href="chat.css">
+</head>
+<body>
+
+    <div class="ambient-bg"></div>
+    <div class="chat-bg-pattern"></div>
+
+    <section id="landing-screen">
+        <div class="glass-card">
+            <div class="logo-circle">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="36" height="36"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            </div>
+            <h1 class="title" data-lang="load_title">История Чата</h1>
+            <p class="subtitle" data-lang="load_sub">Восстановите историю из ZIP-архива</p>
+
+            <div class="drop-zone" id="drop-zone">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div class="drop-text" data-lang="drop_text">Перетащите <span>ZIP-архив</span> сюда</div>
+            </div>
+
+            <div class="loading-state" id="loading-state">
+                <div class="spinner"></div>
+                <div id="loading-text" data-lang="loading">Чтение архива...</div>
+            </div>
+            <input type="file" id="file-input" style="display: none;" accept=".zip">
+
+            <div class="footer">
+                <button class="footer-btn theme-toggle" id="theme-btn">
+                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <div class="lang-container">
+                    <button class="footer-btn lang-btn" id="lang-btn">
+                        <span id="current-lang">RU</span>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:5px"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="lang-dropdown" id="lang-dropdown">
+                        <div class="lang-item" data-val="ru">Русский</div>
+                        <div class="lang-item" data-val="en">English</div>
+                        <div class="lang-item" data-val="uk">Українська</div>
+                        <div class="lang-item" data-val="pl">Polski</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="chat-interface">
+        <div class="main-chat-area">
+            <div class="chat-header">
+                <div class="header-left">
+                    <button class="icon-btn" onclick="location.reload()">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="header-center" id="header-info">
+                    <div class="header-title" id="chat-title">Chat Name</div>
+                    <div class="header-status" data-lang="click_info">информация</div>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn" id="search-toggle">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </button>
+                    <button class="icon-btn" id="sidebar-toggle">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="search-bar">
+                <input type="text" class="search-input" id="search-input" placeholder="Поиск...">
+                <span id="search-count"></span>
+            </div>
+
+            <div id="chat-container">
+                <div class="history-wrap" id="history"></div>
+            </div>
+            
+            <button id="scroll-down-btn">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+        </div>
+
+        <div id="right-sidebar">
+            <div id="sidebar-main" class="sidebar-view active">
+                <div class="sidebar-header">
+                    <div class="sb-title" data-lang="sidebar_info">Информация</div>
+                    <button class="icon-btn" id="sidebar-close">✕</button>
+                </div>
+                <div class="profile-section">
+                    <div class="profile-avatar" id="profile-avatar">TG</div>
+                    <div class="profile-name" id="profile-name">Chat</div>
+                    <div class="profile-meta"><span id="msg-count">0</span> <span data-lang="total_msg">сообщений</span></div>
+                </div>
+                <div class="media-links">
+                    <div class="media-link" data-type="photos"><span class="ml-icon">🖼️</span> <span class="ml-name" data-lang="media_photos">Фото</span> <span class="ml-count" id="cnt-photos">0</span></div>
+                    <div class="media-link" data-type="videos"><span class="ml-icon">🎬</span> <span class="ml-name" data-lang="media_videos">Видео</span> <span class="ml-count" id="cnt-videos">0</span></div>
+                    <div class="media-link" data-type="voices"><span class="ml-icon">🎤</span> <span class="ml-name" data-lang="media_voices">Голосовые</span> <span class="ml-count" id="cnt-voices">0</span></div>
+                </div>
+            </div>
+
+            <div id="sidebar-content" class="sidebar-view">
+                <div class="sidebar-header">
+                    <button class="icon-btn" id="media-back">❮</button>
+                    <div class="sb-title" id="media-tab-title">Media</div>
+                </div>
+                <div id="media-grid" class="media-grid"></div>
+            </div>
+        </div>
+
+        <div id="sticky-player">
+            <button class="sp-btn" id="player-play-btn">
+                <svg id="play-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pause-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <div class="sp-info">
+                <div class="sp-name" id="player-title">Voice</div>
+                <input type="range" class="sp-slider" id="audio-slider" min="0" value="0" step="0.1">
+                <div class="sp-time"><span id="cur-time">0:00</span> <span id="dur-time">0:00</span></div>
+            </div>
+            <button class="sp-btn" id="player-close">✕</button>
+        </div>
+
+        <div id="lightbox">
+            <button class="lb-close-btn" id="lb-close">✕</button>
+            <div id="lb-content"></div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
